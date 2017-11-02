@@ -8,8 +8,9 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "express": "4.15.4",
+    "@mapbox/geo-viewport": "^0.2.2",
     "@mapbox/mapbox-gl-native": "3.5.4",
+    "express": "4.15.4",
     "request": "2.81.0",
     "sharp": "0.18.2"
   }
