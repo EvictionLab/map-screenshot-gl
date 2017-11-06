@@ -69,6 +69,11 @@ function processMapStyle(style, layer, dataProp, bubbleProp) {
     return style;
 }
 
+// Return 200 for load balancer health check
+app.get('/', (req, res) => {
+    return res.sendStatus(200);
+});
+
 // 48.31, 41.7, -82.1, -90.4
 // Example request: http://localhost:3000/48.31/41.7/-82.1/-90.4/states/p-16/er-16
 app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp', (req, res) => {
