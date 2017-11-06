@@ -1,8 +1,6 @@
 FROM node:6-stretch
 
 ENV NODE_ENV="production"
-VOLUME /data
-WORKDIR /data
 RUN apt-get -qq update \
 && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     apt-transport-https \
@@ -20,6 +18,6 @@ RUN apt-get -qq update \
 && apt-get clean
 
 RUN mkdir -p /usr/src/app
-COPY / /usr/src/app
+COPY /src /usr/src/app
 RUN cd /usr/src/app && npm install --production
 ENTRYPOINT ["/usr/src/app/run.sh"]
