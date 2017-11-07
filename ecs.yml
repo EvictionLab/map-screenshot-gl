@@ -6,50 +6,29 @@ Parameters:
   VpcId:
     Type: AWS::EC2::VPC::Id
     Description: Select a VPC that allows instances access to the Internet.
-  DockerImage:
-    Type: String
-    Description: Docker Image on Docker Hub to use for deployment
   SubnetId:
     Type: List<AWS::EC2::Subnet::Id>
     Description: Select at two subnets in your selected VPC.
-  DesiredCapacity:
-    Type: Number
-    Default: '1'
-    Description: Number of instances to launch in your ECS cluster.
-  MaxSize:
-    Type: Number
-    Default: '1'
-    Description: Maximum number of instances that can be launched in your ECS cluster.
-  InstanceType:
-    Description: EC2 instance type
-    Type: String
-    Default: t2.micro
-    AllowedValues: [t2.micro, t2.small, t2.medium, t2.large, m3.medium, m3.large,
-      m3.xlarge, m3.2xlarge, m4.large, m4.xlarge, m4.2xlarge, m4.4xlarge, m4.10xlarge,
-      c4.large, c4.xlarge, c4.2xlarge, c4.4xlarge, c4.8xlarge, c3.large, c3.xlarge,
-      c3.2xlarge, c3.4xlarge, c3.8xlarge, r3.large, r3.xlarge, r3.2xlarge, r3.4xlarge,
-      r3.8xlarge, i2.xlarge, i2.2xlarge, i2.4xlarge, i2.8xlarge]
-    ConstraintDescription: Please choose a valid instance type.
 Mappings:
   AWSRegionToAMI:
     us-east-1:
-      AMIID: ami-b2df2ca4
+      AMIID: ami-20ff515a
     us-east-2:
-      AMIID: ami-832b0ee6
+      AMIID: ami-b0527dd5
     us-west-1:
-      AMIID: ami-dd104dbd
+      AMIID: ami-b388b4d3
     us-west-2:
-      AMIID: ami-022b9262
+      AMIID: ami-3702ca4f
     eu-west-1:
-      AMIID: ami-a7f2acc1
+      AMIID: ami-d65dfbaf
     eu-central-1:
-      AMIID: ami-ec2be583
+      AMIID: ami-ebfb7e84
     ap-northeast-1:
-      AMIID: ami-c393d6a4
+      AMIID: ami-95903df3
     ap-southeast-1:
-      AMIID: ami-a88530cb
+      AMIID: ami-c8c98bab
     ap-southeast-2:
-      AMIID: ami-8af8ffe9
+      AMIID: ami-e3b75981
 Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
@@ -94,7 +73,7 @@ Resources:
       ContainerDefinitions:
       - Name: map-screenshot
         Essential: true
-        Image: !Ref 'DockerImage'
+        Image: evictionlab/map-screenshot-gl
         Cpu: '256'
         Memory: '300'
         LogConfiguration:
@@ -141,10 +120,10 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     DependsOn: ECSALB
     Properties:
-      HealthCheckIntervalSeconds: 10
+      HealthCheckIntervalSeconds: 15
       HealthCheckPath: /
       HealthCheckProtocol: HTTP
-      HealthCheckTimeoutSeconds: 5
+      HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 2
       Name: ECSTG
       Port: 80
@@ -157,8 +136,8 @@ Resources:
       VPCZoneIdentifier: !Ref 'SubnetId'
       LaunchConfigurationName: !Ref 'ContainerInstances'
       MinSize: '1'
-      MaxSize: !Ref 'MaxSize'
-      DesiredCapacity: !Ref 'DesiredCapacity'
+      MaxSize: '12'
+      DesiredCapacity: '2'
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
@@ -170,7 +149,7 @@ Resources:
     Properties:
       ImageId: !FindInMap [AWSRegionToAMI, !Ref 'AWS::Region', AMIID]
       SecurityGroups: [!Ref 'EcsSecurityGroup']
-      InstanceType: !Ref 'InstanceType'
+      InstanceType: t2.micro
       IamInstanceProfile: !Ref 'EC2InstanceProfile'
       KeyName: !Ref 'KeyName'
       UserData:
@@ -184,7 +163,7 @@ Resources:
     DependsOn: ALBListener
     Properties:
       Cluster: !Ref 'ECSCluster'
-      DesiredCount: '1'
+      DesiredCount: '6'
       LoadBalancers:
       - ContainerName: map-screenshot
         ContainerPort: '3000'
@@ -214,7 +193,7 @@ Resources:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     DependsOn: service
     Properties:
-      MaxCapacity: 2
+      MaxCapacity: 36
       MinCapacity: 1
       ResourceId: !Join ['', [service/, !Ref 'ECSCluster', /, !GetAtt [service, Name]]]
       RoleARN: !GetAtt [AutoscalingRole, Arn]
@@ -227,29 +206,73 @@ Resources:
       PolicyType: StepScaling
       ScalingTargetId: !Ref 'ServiceScalingTarget'
       StepScalingPolicyConfiguration:
-        AdjustmentType: PercentChangeInCapacity
+        AdjustmentType: ChangeInCapacity
         Cooldown: 60
         MetricAggregationType: Average
         StepAdjustments:
         - MetricIntervalLowerBound: 0
-          ScalingAdjustment: 200
-  ALB500sAlarmScaleUp:
-    Type: AWS::CloudWatch::Alarm
+          ScalingAdjustment: 3
+  InstanceScalingPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
     Properties:
-      EvaluationPeriods: '1'
-      Statistic: Average
-      Threshold: '10'
-      AlarmDescription: Alarm if our ALB generates too many HTTP 500s.
-      Period: '60'
-      AlarmActions: [!Ref 'ServiceScalingPolicy']
-      Namespace: AWS/ApplicationELB
-      Dimensions:
-        - Name: LoadBalancer
-          Value: !GetAtt 
+      AutoScalingGroupName:
+         Ref: 'ECSAutoScalingGroup'
+      PolicyType: StepScaling
+      AdjustmentType: ChangeInCapacity
+      StepAdjustments:
+      - MetricIntervalLowerBound: '0'
+        MetricIntervalUpperBound: '100'
+        ScalingAdjustment: -1
+      - MetricIntervalLowerBound: '100'
+        ScalingAdjustment: 1
+  RequestCountScalingAlarmScaleUp100:
+     Type: "AWS::CloudWatch::Alarm"
+     Properties:
+       ActionsEnabled: true
+       AlarmActions:
+         - Ref: ServiceScalingPolicy
+         - Ref: InstanceScalingPolicy
+       OKActions:
+         - Ref: ServiceScalingPolicy
+         - Ref: InstanceScalingPolicy
+       AlarmDescription: 'Scale when Request Count >= 100'
+       AlarmName: 'Scale when Request Count >= 100'
+       ComparisonOperator: GreaterThanOrEqualToThreshold
+       Dimensions:
+         - Name: LoadBalancer
+           Value: !GetAtt 
             - ECSALB
             - LoadBalancerFullName
-      ComparisonOperator: GreaterThanThreshold
-      MetricName: HTTPCode_ELB_5XX_Count
+       EvaluationPeriods: '1'
+       MetricName: RequestCount
+       Namespace: AWS/ApplicationELB
+       Period: '60'
+       Statistic: Average
+       Threshold: '100'
+  RequestCountScalingAlarmScaleDown100:
+     Type: "AWS::CloudWatch::Alarm"
+     Properties:
+       ActionsEnabled: true
+       AlarmActions:
+         - Ref: ServiceScalingPolicy
+         - Ref: InstanceScalingPolicy
+       OKActions:
+         - Ref: ServiceScalingPolicy
+         - Ref: InstanceScalingPolicy
+       AlarmDescription: 'Scale when Request Count < 100'
+       AlarmName: 'Scale when Request Count < 100'
+       ComparisonOperator: LessThanThreshold
+       Dimensions:
+         - Name: LoadBalancer
+           Value: !GetAtt 
+            - ECSALB
+            - LoadBalancerFullName
+       EvaluationPeriods: '1'
+       MetricName: RequestCount
+       Namespace: AWS/ApplicationELB
+       Period: '60'
+       Statistic: Sum
+       Threshold: '100'
   EC2Role:
     Type: AWS::IAM::Role
     Properties:
