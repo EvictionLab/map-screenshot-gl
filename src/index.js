@@ -84,7 +84,6 @@ app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp', (req, res) => {
             console.error(err);
             res.status(500).send(err);
         } else {
-            console.log(typeof styleRes);
             if (typeof styleRes === 'undefined') {
                 res.sendStatus(500);
             } else if (styleRes.statusCode === 200) {
