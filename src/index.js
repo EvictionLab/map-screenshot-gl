@@ -27,7 +27,7 @@ const options = {
 
                 callback(null, response);
             } else {
-                callback(new Error(body));
+                callback(new Error(JSON.parse(body).message));
             }
         });
     },
@@ -80,37 +80,44 @@ app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp', (req, res) => {
     request({
         url: 'http://eviction-maps.s3-website.us-east-2.amazonaws.com/assets/style.json',
     }, (err, styleRes, body) => {
-        if (styleRes.statusCode === 200) {
-            const styleBody = JSON.parse(body);
-            const map = new mbgl.Map(options);
-            const style = processMapStyle(styleBody, req.params.layer, req.params.dataProp, req.params.bubbleProp);
-            map.load(processMapStyle(styleBody, req.params.layer, req.params.dataProp, req.params.bubbleProp));
+        if (err) {
+            console.error(err);
+            res.status(500).send(err);
+        } else {
+            console.log(typeof styleRes);
+            if (typeof styleRes === 'undefined') {
+                res.sendStatus(500);
+            } else if (styleRes.statusCode === 200) {
+                const styleBody = JSON.parse(body);
+                const map = new mbgl.Map(options);
+                const style = processMapStyle(styleBody, req.params.layer, req.params.dataProp, req.params.bubbleProp);
+                map.load(processMapStyle(styleBody, req.params.layer, req.params.dataProp, req.params.bubbleProp));
 
-            const mapParams = geoViewport.viewport(
-                [+req.params.w, +req.params.s, +req.params.e, +req.params.n],
-                [256, 256]
-            );
-            map.render(mapParams, (err, buffer) => {
-                if (err) console.error(err);
-
-                map.release();
-
-                const image = sharp(buffer, {
-                    raw: {
-                        width: 512,
-                        height: 512,
-                        channels: 4
+                const mapParams = geoViewport.viewport(
+                    [+req.params.w, +req.params.s, +req.params.e, +req.params.n],
+                    [256, 256]
+                );
+                map.render(mapParams, (err, buffer) => {
+                    if (err) {
+                        console.error(err);
+                        res.send(err);
+                    } else {
+                        map.release();
+                        const image = sharp(buffer, {
+                            raw: {
+                                width: 512,
+                                height: 512,
+                                channels: 4
+                            }
+                        });
+                        res.set('Content-Type', 'image/png');
+                        image.png().toBuffer()
+                            .then(result => {
+                                res.send(result);
+                            });
                     }
                 });
-                image.png({ adaptiveFiltering: false });
-                image.toBuffer((err, buffer, info) => {
-                    if (!buffer) {
-                        return res.status(404).send('Not found');
-                    }
-                    res.contentType('png');
-                    return res.status(200).send(buffer);
-                });
-            });
+            }
         }
     });
 });

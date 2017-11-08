@@ -212,67 +212,79 @@ Resources:
         StepAdjustments:
         - MetricIntervalLowerBound: 0
           ScalingAdjustment: 3
-  InstanceScalingPolicy:
+  InstanceScaleUpPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
       AutoScalingGroupName:
          Ref: 'ECSAutoScalingGroup'
-      PolicyType: StepScaling
+      # PolicyType: StepScaling
       AdjustmentType: ChangeInCapacity
-      StepAdjustments:
-      - MetricIntervalLowerBound: '0'
-        MetricIntervalUpperBound: '100'
-        ScalingAdjustment: -1
-      - MetricIntervalLowerBound: '100'
-        ScalingAdjustment: 1
-  RequestCountScalingAlarmScaleUp100:
+      Cooldown: '300'
+      ScalingAdjustment: 1
+  InstanceScaleDownPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName:
+         Ref: 'ECSAutoScalingGroup'
+      # PolicyType: StepScaling
+      Cooldown: '600'
+      AdjustmentType: ChangeInCapacity
+      ScalingAdjustment: -1
+  # InstanceScalingPolicy:
+  #   Type: AWS::AutoScaling::ScalingPolicy
+  #   Properties:
+  #     AutoScalingGroupName:
+  #        Ref: 'ECSAutoScalingGroup'
+  #     PolicyType: StepScaling
+  #     AdjustmentType: ChangeInCapacity
+  #     StepAdjustments:
+  #     - MetricIntervalLowerBound: '0'
+  #       MetricIntervalUpperBound: '100'
+  #       ScalingAdjustment: -1
+  #     - MetricIntervalLowerBound: '100'
+  #       ScalingAdjustment: 1
+  RequestCountScalingAlarmScaleUp:
      Type: "AWS::CloudWatch::Alarm"
      Properties:
        ActionsEnabled: true
        AlarmActions:
          - Ref: ServiceScalingPolicy
-         - Ref: InstanceScalingPolicy
-       OKActions:
-         - Ref: ServiceScalingPolicy
-         - Ref: InstanceScalingPolicy
-       AlarmDescription: 'Scale when Request Count >= 100'
-       AlarmName: 'Scale when Request Count >= 100'
+         - Ref: InstanceScaleUpPolicy
+       AlarmDescription: 'Scale when Request Count >= 10/1min'
+       AlarmName: 'Scale when Request Count >= 10/1min'
        ComparisonOperator: GreaterThanOrEqualToThreshold
        Dimensions:
          - Name: LoadBalancer
-           Value: !GetAtt 
+           Value: !GetAtt
             - ECSALB
             - LoadBalancerFullName
-       EvaluationPeriods: '1'
+       EvaluationPeriods: '2'
        MetricName: RequestCount
        Namespace: AWS/ApplicationELB
        Period: '60'
-       Statistic: Average
-       Threshold: '100'
-  RequestCountScalingAlarmScaleDown100:
+       Statistic: Sum
+       Threshold: '10'
+  RequestCountScalingAlarmScaleDown:
      Type: "AWS::CloudWatch::Alarm"
      Properties:
        ActionsEnabled: true
        AlarmActions:
          - Ref: ServiceScalingPolicy
-         - Ref: InstanceScalingPolicy
-       OKActions:
-         - Ref: ServiceScalingPolicy
-         - Ref: InstanceScalingPolicy
-       AlarmDescription: 'Scale when Request Count < 100'
-       AlarmName: 'Scale when Request Count < 100'
+         - Ref: InstanceScaleDownPolicy
+       AlarmDescription: 'Scale when Request Count < 10/10min'
+       AlarmName: 'Scale when Request Count < 10/10min'
        ComparisonOperator: LessThanThreshold
        Dimensions:
          - Name: LoadBalancer
            Value: !GetAtt 
             - ECSALB
             - LoadBalancerFullName
-       EvaluationPeriods: '1'
+       EvaluationPeriods: '2'
        MetricName: RequestCount
        Namespace: AWS/ApplicationELB
-       Period: '60'
+       Period: '600'
        Statistic: Sum
-       Threshold: '100'
+       Threshold: '10'
   EC2Role:
     Type: AWS::IAM::Role
     Properties:
