@@ -34,13 +34,37 @@ const options = {
     ratio: 1
 };
 
-function getFillProp(layer, dataProp) {
-    const dataScale = scales.filter(p => p.id === dataProp.split('-')[0])[0];
+function getProp(layer, dataProp) {
+    const dataScale = scales.dataAttributes.filter(p => p.id === dataProp.split('-')[0])[0];
     return {
         property: dataProp,
         default: dataScale.default,
-        stops: dataScale.fillStops.hasOwnProperty(layer) ? dataScale.fillStops[layer] : dataScale.fillStops['default']
+        stops: dataScale.stops.hasOwnProperty(layer) ? dataScale.stops[layer] : dataScale.stops['default']
     };
+}
+
+function convertExpressionToFunction(layer, dataProp) {
+    const dataExp = scales.bubbleAttributes.filter(p => p.id === dataProp.split('-')[0])[0];
+    const expression = dataExp.expressions.hasOwnProperty(layer) ? dataExp.expressions[layer] : dataExp.expressions['default'];
+    expression[2][2][1] = dataProp;
+
+    const dataFunc = {
+        property: dataProp,
+        stops: []
+    };
+
+    const baseVal = expression[2][1];
+    const scaleLevels = expression.slice(3)[0].slice(3);
+    for (let i = 0; i < scaleLevels.length; i += 2) {
+        let divide = scaleLevels[i + 1].slice(-1);
+        divide = isNaN(divide) ? divide[1] * divide[2] : divide;
+        const zoomArr = [
+            [ { zoom: scaleLevels[i], value: 0 }, 0 ],
+            [ { zoom: scaleLevels[i], value: baseVal }, baseVal / divide]
+        ];
+        dataFunc.stops = dataFunc.stops.concat(zoomArr);
+    }
+    return dataFunc;
 }
 
 function processMapStyle(style, layer, dataProp, bubbleProp) {
@@ -53,15 +77,15 @@ function processMapStyle(style, layer, dataProp, bubbleProp) {
             l.source = `us-${layer}-${censusYearSuffix}`;
             l.layout.visibility = 'visible';
             if (l.id === layer) {
-                l.paint['fill-color'] = getFillProp(layer, dataProp);
+                l.paint['fill-color'] = getProp(layer, dataProp);
             }
             if (l.id === `${layer}_null`) {
                 l.filter = ['<', dataProp, 0];
             }
             if (l.type === 'circle') {
-                l.paint['circle-radius'].property = bubbleProp;
-                l.paint['circle-color'].property = bubbleProp;
+                l.filter = ['>', bubbleProp, -1];
                 l.paint['circle-stroke-color'].property = bubbleProp;
+                l.paint['circle-radius'] = convertExpressionToFunction(layer, bubbleProp);
             }
         }
         return l;
@@ -90,7 +114,7 @@ app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp', (req, res) => {
                 const styleBody = JSON.parse(body);
                 const map = new mbgl.Map(options);
                 const style = processMapStyle(styleBody, req.params.layer, req.params.dataProp, req.params.bubbleProp);
-                map.load(processMapStyle(styleBody, req.params.layer, req.params.dataProp, req.params.bubbleProp));
+                map.load(style);
 
                 const mapParams = geoViewport.viewport(
                     [+req.params.w, +req.params.s, +req.params.e, +req.params.n],
