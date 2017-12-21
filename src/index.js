@@ -43,11 +43,28 @@ function getProp(layer, dataProp) {
     };
 }
 
-function getExpression(layer, dataProp) {
+function convertExpressionToFunction(layer, dataProp) {
     const dataExp = scales.bubbleAttributes.filter(p => p.id === dataProp.split('-')[0])[0];
     const expression = dataExp.expressions.hasOwnProperty(layer) ? dataExp.expressions[layer] : dataExp.expressions['default'];
     expression[2][2][1] = dataProp;
-    return expression;
+
+    const dataFunc = {
+        property: dataProp,
+        stops: []
+    };
+
+    const baseVal = expression[2][1];
+    const scaleLevels = expression.slice(3)[0].slice(3);
+    for (let i = 0; i < scaleLevels.length; i += 2) {
+        let divide = scaleLevels[i + 1].slice(-1);
+        divide = isNaN(divide) ? divide[1] * divide[2] : divide;
+        const zoomArr = [
+            [ { zoom: scaleLevels[i], value: 0 }, 0 ],
+            [ { zoom: scaleLevels[i], value: baseVal }, baseVal / divide]
+        ];
+        dataFunc.stops = dataFunc.stops.concat(zoomArr);
+    }
+    return dataFunc;
 }
 
 function processMapStyle(style, layer, dataProp, bubbleProp) {
@@ -68,7 +85,7 @@ function processMapStyle(style, layer, dataProp, bubbleProp) {
             if (l.type === 'circle') {
                 l.filter = ['>', bubbleProp, -1];
                 l.paint['circle-stroke-color'].property = bubbleProp;
-                l.paint['circle-radius'] = getExpression(layer, bubbleProp);
+                l.paint['circle-radius'] = convertExpressionToFunction(layer, bubbleProp);
             }
         }
         return l;
