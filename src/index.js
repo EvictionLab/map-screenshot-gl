@@ -98,8 +98,9 @@ app.get('/', (req, res) => {
     return res.sendStatus(200);
 });
 
-// 48.31, 41.7, -82.1, -90.4
-// Example request: http://localhost:3000/48.31/41.7/-82.1/-90.4/states/p-16/er-16
+// Example requests: 
+// - http://localhost:3000/48.31/41.7/-82.1/-90.4/states/p-16/er-16
+// - http://localhost:3000/42.21/41.8/-87.7/-88.5/tracts/p-16/er-16
 app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp', (req, res) => {
     request({
         url: 'http://eviction-maps.s3-website.us-east-2.amazonaws.com/assets/style.json',
@@ -116,22 +117,19 @@ app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp', (req, res) => {
                 const style = processMapStyle(styleBody, req.params.layer, req.params.dataProp, req.params.bubbleProp);
                 map.load(style);
 
+                const mapDimensions = { width: 1024, height: 512 };
                 const mapParams = geoViewport.viewport(
                     [+req.params.w, +req.params.s, +req.params.e, +req.params.n],
-                    [256, 256]
+                    [mapDimensions.width / 2, mapDimensions.height / 2]
                 );
-                map.render(mapParams, (err, buffer) => {
+                map.render(Object.assign(mapParams, mapDimensions), (err, buffer) => {
                     if (err) {
                         console.error(err);
                         res.send(err);
                     } else {
                         map.release();
                         const image = sharp(buffer, {
-                            raw: {
-                                width: 512,
-                                height: 512,
-                                channels: 4
-                            }
+                            raw: Object.assign({ channels: 4 }, mapDimensions)
                         });
                         res.set('Content-Type', 'image/png');
                         image.png().toBuffer()
