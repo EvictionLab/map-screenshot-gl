@@ -27,7 +27,7 @@ const options = {
 
                 callback(null, response);
             } else {
-                callback(new Error(JSON.parse(body).message));
+                callback(null, res);
             }
         });
     },
@@ -120,7 +120,7 @@ app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp', (req, res) => {
                 const mapDimensions = { width: 1024, height: 512 };
                 const mapParams = geoViewport.viewport(
                     [+req.params.w, +req.params.s, +req.params.e, +req.params.n],
-                    [mapDimensions.width / 2, mapDimensions.height / 2]
+                    [mapDimensions.width / 2.5, mapDimensions.height / 2.5]
                 );
                 map.render(Object.assign(mapParams, mapDimensions), (err, buffer) => {
                     if (err) {
