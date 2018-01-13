@@ -72,9 +72,14 @@ function processMapStyle(style, layer, dataProp, bubbleProp) {
     const censusYear = Math.floor(yearSuffix / 10) * 10;
     const censusYearSuffix = censusYear < 10 ? "0" + censusYear : censusYear.toString();
     const year = yearSuffix + (yearSuffix > 40 ? 1900 : 2000);
+    const requiredProps = ['layout', 'paint'];
     style.layers = style.layers.map(l => {
         if (l.id.startsWith(layer)) {
             l.source = `us-${layer}-${censusYearSuffix}`;
+            // Set required props to empty object if not present
+            requiredProps.forEach(p => {
+                if (!l.hasOwnProperty(p)) { l[p] = {}; }
+            });
             l.layout.visibility = 'visible';
             if (l.id === layer) {
                 l.paint['fill-color'] = getProp(layer, dataProp);
