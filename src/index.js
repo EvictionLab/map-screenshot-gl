@@ -56,11 +56,16 @@ function convertExpressionToFunction(layer, dataProp) {
     const baseVal = expression[2][1];
     const scaleLevels = expression.slice(3)[0].slice(3);
     for (let i = 0; i < scaleLevels.length; i += 2) {
-        let divide = scaleLevels[i + 1].slice(-1);
-        divide = isNaN(divide) ? divide[1] * divide[2] : divide;
+        const divide = scaleLevels[i + 1].slice(-1);
+        let adjustedVal;
+        if (Array.isArray(divide) && Array.isArray(divide[0])) {
+            adjustedVal = baseVal / (divide[0][1] * divide[0][2]);
+        } else {
+            adjustedVal = baseVal / divide[0];
+        }
         const zoomArr = [
             [ { zoom: scaleLevels[i], value: 0 }, 0 ],
-            [ { zoom: scaleLevels[i], value: baseVal }, baseVal / divide]
+            [ { zoom: scaleLevels[i], value: baseVal }, adjustedVal ]
         ];
         dataFunc.stops = dataFunc.stops.concat(zoomArr);
     }
