@@ -127,7 +127,7 @@ app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp', (req, res) => {
                 const style = processMapStyle(styleBody, req.params.layer, req.params.dataProp, req.params.bubbleProp);
                 map.load(style);
 
-                const mapDimensions = { width: 1340, height: 400 };
+                const mapDimensions = { width: 1340, height: 440 };
                 const mapParams = geoViewport.viewport(
                     [+req.params.w, +req.params.s, +req.params.e, +req.params.n],
                     [mapDimensions.width / 2.5, mapDimensions.height / 2.5]
