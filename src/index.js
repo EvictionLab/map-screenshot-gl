@@ -7,6 +7,8 @@ const request = require('request');
 const app = require('express')();
 const scales = require('./scales');
 
+const colors = ['rgba(226,64,0,0.8)', 'rgba(67,72,120,0.8)', 'rgba(44,137,127,0.8)'];
+
 const options = {
     request: (req, callback) => {
         request({
@@ -72,30 +74,39 @@ function convertExpressionToFunction(layer, dataProp) {
     return dataFunc;
 }
 
-function processMapStyle(style, layer, dataProp, bubbleProp) {
-    const yearSuffix = +dataProp.substr(-2);
+function processMapStyle(style, params) {
+    const yearSuffix = +params.dataProp.substr(-2);
     const censusYear = Math.floor(yearSuffix / 10) * 10;
     const censusYearSuffix = censusYear < 10 ? "0" + censusYear : censusYear.toString();
     const year = yearSuffix + (yearSuffix > 40 ? 1900 : 2000);
     const requiredProps = ['layout', 'paint'];
+    const layerSource = style.sources
     style.layers = style.layers.map(l => {
-        if (l.id.startsWith(layer)) {
-            l.source = `us-${layer}-${censusYearSuffix}`;
+        if (l.id.startsWith(params.layer)) {
+            l.source = `us-${params.layer}-${censusYearSuffix}`;
             // Set required props to empty object if not present
             requiredProps.forEach(p => {
                 if (!l.hasOwnProperty(p)) { l[p] = {}; }
             });
             l.layout.visibility = 'visible';
-            if (l.id === layer) {
-                l.paint['fill-color'] = getProp(layer, dataProp);
+            if (l.id === params.layer) {
+                l.paint['fill-color'] = getProp(params.layer, params.dataProp);
             }
-            if (l.id === `${layer}_null`) {
-                l.filter = ['<', dataProp, 0];
+            if (l.id === `${params.layer}_null`) {
+                l.filter = ['<', params.dataProp, 0];
             }
             if (l.type === 'circle') {
-                l.filter = ['>', bubbleProp, -1];
-                l.paint['circle-stroke-color'].property = bubbleProp;
-                l.paint['circle-radius'] = convertExpressionToFunction(layer, bubbleProp);
+                l.filter = ['>', params.bubbleProp, -1];
+                l.paint['circle-stroke-color'].property = params.bubbleProp;
+                l.paint['circle-radius'] = convertExpressionToFunction(params.layer, params.bubbleProp);
+            }
+        }
+        if (l.id.startsWith('hover')) {
+            l.source = `us-${params.layer}-${censusYearSuffix}`;
+            l['source-layer'] = params.layer;
+            l.filter = ['==', 'GEOID', params.geoid];
+            if (l.id === 'hover') {
+                l.paint['line-color'] = colors[params.idx];
             }
         }
         return l;
@@ -109,9 +120,9 @@ app.get('/', (req, res) => {
 });
 
 // Example requests: 
-// - http://localhost:3000/48.31/41.7/-82.1/-90.4/states/p-16/er-16
-// - http://localhost:3000/42.21/41.8/-87.7/-88.5/tracts/p-16/er-16
-app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp', (req, res) => {
+// - http://localhost:3000/48.31/41.7/-82.1/-90.4/states/p-16/er-16/26/0
+// - http://localhost:3000/42.21/41.8/-87.7/-88.5/tracts/p-16/er-16/26/1
+app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp/:geoid/:idx', (req, res) => {
     request({
         url: 'http://eviction-maps.s3-website.us-east-2.amazonaws.com/assets/style.json',
     }, (err, styleRes, body) => {
@@ -124,7 +135,7 @@ app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp', (req, res) => {
             } else if (styleRes.statusCode === 200) {
                 const styleBody = JSON.parse(body);
                 const map = new mbgl.Map(options);
-                const style = processMapStyle(styleBody, req.params.layer, req.params.dataProp, req.params.bubbleProp);
+                const style = processMapStyle(styleBody, req.params);
                 map.load(style);
 
                 const mapDimensions = { width: 1340, height: 440 };
