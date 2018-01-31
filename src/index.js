@@ -138,7 +138,10 @@ app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp/:geoid/:idx', (req, res) => {
                 const style = processMapStyle(styleBody, req.params);
                 map.load(style);
 
-                const mapDimensions = { width: 1340, height: 440 };
+                const mapDimensions = {
+                    width: +req.query['width'] || 1340,
+                    height: +req.query['height'] || 440
+                };
                 const mapParams = geoViewport.viewport(
                     [+req.params.w, +req.params.s, +req.params.e, +req.params.n],
                     [mapDimensions.width / 2.5, mapDimensions.height / 2.5]
