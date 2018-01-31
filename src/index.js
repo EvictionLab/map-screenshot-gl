@@ -81,7 +81,7 @@ function processMapStyle(style, params) {
     const year = yearSuffix + (yearSuffix > 40 ? 1900 : 2000);
     const requiredProps = ['layout', 'paint'];
     const layerSource = style.sources
-    style.layers = style.layers.map(l => {
+    style.layers = style.layers.filter(l => l.id !== 'counties_text' && !l.id.startsWith('city')).map(l => {
         if (l.id.startsWith(params.layer)) {
             l.source = `us-${params.layer}-${censusYearSuffix}`;
             // Set required props to empty object if not present
