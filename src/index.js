@@ -105,6 +105,8 @@ function processMapStyle(style, params) {
             l.source = `us-${params.layer}-${censusYearSuffix}`;
             l['source-layer'] = params.layer;
             l.filter = ['==', 'GEOID', params.geoid];
+            // Double line width for visibility
+            l.paint['line-width'] = l.paint['line-width'] * 2;
             if (l.id === 'hover') {
                 l.paint['line-color'] = colors[params.idx];
             }
@@ -139,8 +141,8 @@ app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp/:geoid/:idx', (req, res) => {
                 map.load(style);
 
                 const mapDimensions = {
-                    width: +req.query['width'] || 1340,
-                    height: +req.query['height'] || 440
+                    width: +req.query['width'] || 800,
+                    height: +req.query['height'] || 800
                 };
                 const mapParams = geoViewport.viewport(
                     [+req.params.w, +req.params.s, +req.params.e, +req.params.n],
