@@ -15,23 +15,13 @@ Parameters:
 Mappings:
   AWSRegionToAMI:
     us-east-1:
-      AMIID: ami-20ff515a
+      AMIID: ami-cad827b7
     us-east-2:
-      AMIID: ami-b0527dd5
+      AMIID: ami-ef64528a
     us-west-1:
-      AMIID: ami-b388b4d3
+      AMIID: ami-29b8b249
     us-west-2:
-      AMIID: ami-3702ca4f
-    eu-west-1:
-      AMIID: ami-d65dfbaf
-    eu-central-1:
-      AMIID: ami-ebfb7e84
-    ap-northeast-1:
-      AMIID: ami-95903df3
-    ap-southeast-1:
-      AMIID: ami-c8c98bab
-    ap-southeast-2:
-      AMIID: ami-e3b75981
+      AMIID: ami-baa236c2
 Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
@@ -85,8 +75,8 @@ Resources:
       - Name: map-screenshot
         Essential: true
         Image: evictionlab/map-screenshot-gl
-        Cpu: '256'
-        Memory: '300'
+        Cpu: '128'
+        Memory: '128'
         LogConfiguration:
           LogDriver: awslogs
           Options:
@@ -147,7 +137,7 @@ Resources:
       VPCZoneIdentifier: !Ref 'SubnetId'
       LaunchConfigurationName: !Ref 'ContainerInstances'
       MinSize: '1'
-      MaxSize: '12'
+      MaxSize: '6'
       DesiredCapacity: '2'
     CreationPolicy:
       ResourceSignal:
@@ -174,7 +164,7 @@ Resources:
     DependsOn: ALBListener
     Properties:
       Cluster: !Ref 'ECSCluster'
-      DesiredCount: '6'
+      DesiredCount: '14'
       LoadBalancers:
       - ContainerName: map-screenshot
         ContainerPort: '3000'
@@ -204,7 +194,7 @@ Resources:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     DependsOn: service
     Properties:
-      MaxCapacity: 36
+      MaxCapacity: 42
       MinCapacity: 1
       ResourceId: !Join ['', [service/, !Ref 'ECSCluster', /, !GetAtt [service, Name]]]
       RoleARN: !GetAtt [AutoscalingRole, Arn]
@@ -222,7 +212,7 @@ Resources:
         MetricAggregationType: Maximum
         StepAdjustments:
         - MetricIntervalLowerBound: 0
-          ScalingAdjustment: 3
+          ScalingAdjustment: 7
   InstanceScaleUpPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
