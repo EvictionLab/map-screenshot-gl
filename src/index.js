@@ -48,28 +48,21 @@ function getProp(layer, dataProp) {
 function convertExpressionToFunction(layer, dataProp) {
     const dataExp = scales.bubbleAttributes.filter(p => p.id === dataProp.split('-')[0])[0];
     const expression = dataExp.expressions.hasOwnProperty(layer) ? dataExp.expressions[layer] : dataExp.expressions['default'];
-    expression[2][2][1] = dataProp;
 
     const dataFunc = {
         property: dataProp,
         stops: []
     };
 
-    const baseVal = expression[2][1];
     const scaleLevels = expression.slice(3)[0].slice(3);
     for (let i = 0; i < scaleLevels.length; i += 2) {
-        const divide = scaleLevels[i + 1].slice(-1);
-        let adjustedVal;
-        if (Array.isArray(divide) && Array.isArray(divide[0])) {
-            adjustedVal = baseVal / (divide[0][1] * divide[0][2]);
-        } else {
-            adjustedVal = baseVal / divide[0];
+        const zoomLevel = scaleLevels[i];
+        const zoomValues = scaleLevels[i + 1].slice(3);
+        for (let zi = 0; zi < zoomValues.length; zi += 2) {
+            dataFunc.stops.push([
+                { zoom: zoomLevel, value: zoomValues[zi] }, zoomValues[zi + 1]
+            ]);
         }
-        const zoomArr = [
-            [ { zoom: scaleLevels[i], value: 0 }, 0 ],
-            [ { zoom: scaleLevels[i], value: baseVal }, adjustedVal ]
-        ];
-        dataFunc.stops = dataFunc.stops.concat(zoomArr);
     }
     return dataFunc;
 }
@@ -96,8 +89,17 @@ function processMapStyle(style, params) {
                 l.filter = ['<', params.dataProp, 0];
             }
             if (l.type === 'circle') {
-                l.filter = ['>', params.bubbleProp, -1];
-                l.paint['circle-stroke-color'].property = params.bubbleProp;
+                l.filter = undefined;
+                l.paint['circle-color'] = {
+                    property: params.bubbleProp,
+                    default: 'rgba(255,4,0,0.65)',
+                    stops: [[-1, 'rgba(255,255,255,0.65)'], [0, 'rgba(255,4,0,0.65)']]
+                };
+                l.paint['circle-stroke-color'] = {
+                    property: params.bubbleProp,
+                    default: 'rgba(255,255,255,1)',
+                    stops: [[-1, 'rgba(128,128,128,1)'], [0, 'rgba(255,255,255,1)']]
+                };
                 l.paint['circle-radius'] = convertExpressionToFunction(params.layer, params.bubbleProp);
             }
         }
@@ -123,6 +125,7 @@ app.get('/', (req, res) => {
 
 // Example requests: 
 // - http://localhost:3000/48.31/41.7/-82.1/-90.4/states/p-16/er-16/26/0
+// - http://localhost:3000/54.138/37.584/-82.875/-112.879/states/p-16/er-16/38/0
 // - http://localhost:3000/42.21/41.8/-87.7/-88.5/tracts/p-16/er-16/26/1
 app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp/:geoid/:idx', (req, res) => {
     request({

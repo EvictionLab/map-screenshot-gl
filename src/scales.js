@@ -176,7 +176,6 @@ module.exports = {
     bubbleAttributes: [
         {
             'id': 'none',
-            'name': 'None',
             'langKey': 'STATS.NONE',
             'default': 0,
             'expressions': {
@@ -192,134 +191,194 @@ module.exports = {
         },
         {
             'id': 'er',
-            'name': 'Judgment Rate',
             'langKey': 'STATS.JUDGMENT_RATE',
             'default': 0,
             'expressions': {
-                'default': [
-                    'let', 'data_prop', ['min', 20, ['get', 'PROP']],
-                    [
-                        'interpolate', ['linear'], ['zoom'],
-                        4, ['/', ['var', 'data_prop'], 4],
-                        6, ['/', ['var', 'data_prop'], 3],
-                        8, ['/', ['var', 'data_prop'], 2],
-                        9, ['/', ['var', 'data_prop'], 1],
-                        10, ['/', ['var', 'data_prop'], 0.5]
-                    ]
-                ],
                 'states': [
-                    'let', 'data_prop', ['min', 20, ['get', 'PROP']],
+                    'let', 'data_prop', ['get', 'PROP'],
                     [
                         'interpolate', ['linear'], ['zoom'],
-                        2, ['/', ['var', 'data_prop'], 0.8],
-                        4, ['/', ['var', 'data_prop'], 0.4],
-                        6, ['/', ['var', 'data_prop'], 0.2]
+                        2, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 2,
+                            0, 2.5,
+                            30, 60
+                        ],
+                        6, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 3,
+                            0, 2.5,
+                            30, 120
+                        ]
                     ]
                 ],
                 'counties': [
-                    'let', 'data_prop', ['min', 20, ['get', 'PROP']],
+                    'let', 'data_prop', ['get', 'PROP'],
                     [
                         'interpolate', ['linear'], ['zoom'],
-                        2, ['/', ['var', 'data_prop'], 4],
-                        4, ['/', ['var', 'data_prop'], 2],
-                        6, ['/', ['var', 'data_prop'], 1],
-                        8, ['/', ['var', 'data_prop'], 0.5]
+                        2, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 2,
+                            0, 1,
+                            30, 10
+                        ],
+                        8, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 4,
+                            0, 2,
+                            30, 30
+                        ]
                     ]
                 ],
                 'cities': [
-                    'let', 'data_prop', ['min', 20, ['get', 'PROP']],
+                    'let', 'data_prop', ['get', 'PROP'],
                     [
                         'interpolate', ['linear'], ['zoom'],
-                        4, ['/', ['var', 'data_prop'], 4],
-                        6, ['/', ['var', 'data_prop'], 3],
-                        8, ['/', ['var', 'data_prop'], 2],
-                        9, ['/', ['var', 'data_prop'], 1],
-                        10, ['/', ['var', 'data_prop'], 0.5]
+                        2, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 2,
+                            0, 1,
+                            30, 7.5
+                        ],
+                        10, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 3,
+                            0, 1,
+                            30, 20
+                        ]
                     ]
                 ],
                 'tracts': [
-                    'let', 'data_prop', ['min', 20, ['get', 'PROP']],
+                    'let', 'data_prop', ['get', 'PROP'],
                     [
                         'interpolate', ['linear'], ['zoom'],
-                        8, ['/', ['var', 'data_prop'], 4],
-                        10, ['/', ['var', 'data_prop'], 1],
-                        12, ['/', ['var', 'data_prop'], 0.5]
+                        8, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 2,
+                            0, 1,
+                            30, 10
+                        ],
+                        12, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 4,
+                            0, 2,
+                            30, 45
+                        ]
                     ]
                 ],
                 'block-groups': [
-                    'let', 'data_prop', ['min', 20, ['get', 'PROP']],
+                    'let', 'data_prop', ['get', 'PROP'],
                     [
                         'interpolate', ['linear'], ['zoom'],
-                        8, ['/', ['var', 'data_prop'], 8],
-                        10, ['/', ['var', 'data_prop'], 2],
-                        12, ['/', ['var', 'data_prop'], 1]
+                        8, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 2,
+                            0, 1,
+                            30, 7.5
+                        ],
+                        12, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 4,
+                            0, 2,
+                            30, 30
+                        ]
                     ]
                 ]
             }
         },
         {
             'id': 'efr',
-            'name': 'Filing Rate',
             'langKey': 'STATS.FILING_RATE',
             'default': 0,
             'expressions': {
-                'default': [
-                    'let', 'data_prop', ['min', 20, ['get', 'PROP']],
-                    [
-                        'interpolate', ['linear'], ['zoom'],
-                        4, ['/', ['var', 'data_prop'], ['*', 4, 1.5]],
-                        6, ['/', ['var', 'data_prop'], ['*', 3, 1.5]],
-                        8, ['/', ['var', 'data_prop'], ['*', 2, 1.5]],
-                        9, ['/', ['var', 'data_prop'], ['*', 1, 1.5]],
-                        10, ['/', ['var', 'data_prop'], ['*', 0.5, 1.5]]
-                    ]
-                ],
                 'states': [
-                    'let', 'data_prop', ['min', 20, ['get', 'PROP']],
+                    'let', 'data_prop', ['get', 'PROP'],
                     [
                         'interpolate', ['linear'], ['zoom'],
-                        2, ['/', ['var', 'data_prop'], ['*', 0.8, 1.5]],
-                        4, ['/', ['var', 'data_prop'], ['*', 0.4, 1.5]],
-                        6, ['/', ['var', 'data_prop'], ['*', 0.2, 1.5]]
+                        2, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 2,
+                            0, 2.5,
+                            45, 60
+                        ],
+                        6, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 3,
+                            0, 2.5,
+                            45, 120
+                        ]
                     ]
                 ],
                 'counties': [
-                    'let', 'data_prop', ['min', 20, ['get', 'PROP']],
+                    'let', 'data_prop', ['get', 'PROP'],
                     [
                         'interpolate', ['linear'], ['zoom'],
-                        2, ['/', ['var', 'data_prop'], ['*', 4, 1.5]],
-                        4, ['/', ['var', 'data_prop'], ['*', 2, 1.5]],
-                        6, ['/', ['var', 'data_prop'], ['*', 1, 1.5]],
-                        8, ['/', ['var', 'data_prop'], ['*', 0.5, 1.5]]
+                        2, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 2,
+                            0, 1,
+                            45, 10
+                        ],
+                        8, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 4,
+                            0, 2,
+                            45, 30
+                        ]
                     ]
                 ],
                 'cities': [
-                    'let', 'data_prop', ['min', 20, ['get', 'PROP']],
+                    'let', 'data_prop', ['get', 'PROP'],
                     [
                         'interpolate', ['linear'], ['zoom'],
-                        4, ['/', ['var', 'data_prop'], ['*', 4, 1.5]],
-                        6, ['/', ['var', 'data_prop'], ['*', 3, 1.5]],
-                        8, ['/', ['var', 'data_prop'], ['*', 2, 1.5]],
-                        9, ['/', ['var', 'data_prop'], ['*', 1, 1.5]],
-                        10, ['/', ['var', 'data_prop'], ['*', 0.5, 1.5]]
+                        2, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 2,
+                            0, 1,
+                            45, 7.5
+                        ],
+                        10, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 3,
+                            0, 1,
+                            45, 20
+                        ]
                     ]
                 ],
                 'tracts': [
-                    'let', 'data_prop', ['min', 20, ['get', 'PROP']],
+                    'let', 'data_prop', ['get', 'PROP'],
                     [
                         'interpolate', ['linear'], ['zoom'],
-                        8, ['/', ['var', 'data_prop'], ['*', 4, 1.5]],
-                        10, ['/', ['var', 'data_prop'], ['*', 1, 1.5]],
-                        12, ['/', ['var', 'data_prop'], ['*', 0.5, 1.5]]
+                        8, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 2,
+                            0, 1,
+                            45, 10
+                        ],
+                        12, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 4,
+                            0, 2,
+                            45, 45
+                        ]
                     ]
                 ],
                 'block-groups': [
-                    'let', 'data_prop', ['min', 20, ['get', 'PROP']],
+                    'let', 'data_prop', ['get', 'PROP'],
                     [
                         'interpolate', ['linear'], ['zoom'],
-                        8, ['/', ['var', 'data_prop'], ['*', 8, 1.5]],
-                        10, ['/', ['var', 'data_prop'], ['*', 2, 1.5]],
-                        12, ['/', ['var', 'data_prop'], ['*', 1, 1.5]]
+                        8, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 2,
+                            0, 1,
+                            45, 7.5
+                        ],
+                        12, [
+                            'interpolate', ['exponential', 1], ['number', ['var', 'data_prop']],
+                            -1, 4,
+                            0, 2,
+                            45, 30
+                        ]
                     ]
                 ]
             }
