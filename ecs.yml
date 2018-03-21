@@ -75,8 +75,8 @@ Resources:
       - Name: map-screenshot
         Essential: true
         Image: evictionlab/map-screenshot-gl
-        Cpu: '128'
-        Memory: '128'
+        Cpu: '256'
+        Memory: '300'
         LogConfiguration:
           LogDriver: awslogs
           Options:
@@ -137,7 +137,7 @@ Resources:
       VPCZoneIdentifier: !Ref 'SubnetId'
       LaunchConfigurationName: !Ref 'ContainerInstances'
       MinSize: '2'
-      MaxSize: '6'
+      MaxSize: '12'
       DesiredCapacity: '2'
     CreationPolicy:
       ResourceSignal:
@@ -161,16 +161,19 @@ Resources:
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}
   service:
     Type: AWS::ECS::Service
-    DependsOn: ALBListener
     Properties:
       Cluster: !Ref 'ECSCluster'
-      DesiredCount: '14'
+      DesiredCount: '6'
       LoadBalancers:
       - ContainerName: map-screenshot
         ContainerPort: '3000'
         TargetGroupArn: !Ref 'ECSTG'
       Role: !Ref 'ECSServiceRole'
       TaskDefinition: !Ref 'taskdefinition'
+    DependsOn:
+      - ECSTG
+      - ECSServiceRole
+      - taskdefinition
   ECSServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -194,7 +197,7 @@ Resources:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     DependsOn: service
     Properties:
-      MaxCapacity: 42
+      MaxCapacity: 36
       MinCapacity: 1
       ResourceId: !Join ['', [service/, !Ref 'ECSCluster', /, !GetAtt [service, Name]]]
       RoleARN: !GetAtt [AutoscalingRole, Arn]
@@ -212,7 +215,7 @@ Resources:
         MetricAggregationType: Maximum
         StepAdjustments:
         - MetricIntervalLowerBound: 0
-          ScalingAdjustment: 7
+          ScalingAdjustment: 3
   InstanceScaleUpPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
