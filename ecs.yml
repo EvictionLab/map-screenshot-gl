@@ -211,11 +211,11 @@ Resources:
       ScalingTargetId: !Ref 'ServiceScalingTarget'
       StepScalingPolicyConfiguration:
         AdjustmentType: ChangeInCapacity
-        Cooldown: 300
-        MetricAggregationType: Maximum
+        Cooldown: 60
+        MetricAggregationType: Average
         StepAdjustments:
         - MetricIntervalLowerBound: 0
-          ScalingAdjustment: 3
+          ScalingAdjustment: 6
   InstanceScaleUpPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
