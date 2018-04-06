@@ -129,7 +129,7 @@ app.get('/', (req, res) => {
 // - http://localhost:3000/42.21/41.8/-87.7/-88.5/tracts/p-16/er-16/26/1
 app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp/:geoid/:idx', (req, res) => {
     request({
-        url: 'https://beta.evictionlab.org/tool/assets/style.json',
+        url: 'https://evictionlab.org/tool/assets/style.json',
     }, (err, styleRes, body) => {
         if (err) {
             console.error(err);
