@@ -5,3 +5,13 @@ Microservice based on [tileserver-gl](https://github.com/klokantech/tileserver-g
 ## Setup
 
 Build locally with `docker build -t map-screenshot-gl:latest .` and run with `docker run -t -p 3000:3000 map-screenshot-gl:latest`. You'll be able to access results at `localhost:3000`.
+
+## Local install
+
+```bash
+cd map-screenshot-gl
+nvm install
+npm config set python $(which python3)
+cd src
+npm install
+```

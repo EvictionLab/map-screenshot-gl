@@ -9,9 +9,13 @@
   },
   "dependencies": {
     "@mapbox/geo-viewport": "^0.2.2",
-    "@mapbox/mapbox-gl-native": "^3.5.8",
-    "express": "4.15.4",
+    "@mapbox/mapbox-gl-native": "^5.0.2",
+    "@mapbox/node-pre-gyp": "^1.0.10",
+    "express": "4.18.1",
     "request": "2.81.0",
-    "sharp": "0.18.2"
+    "sharp": "0.28.3"
+  },
+  "engines": {
+    "node": "10.24.1"
   }
 }

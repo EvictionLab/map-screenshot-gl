@@ -1,4 +1,4 @@
-FROM node:6-stretch
+FROM node:10.24.1-slim
 
 ENV NODE_ENV="production"
 RUN apt-get -qq update \
