@@ -123,13 +123,14 @@ app.get('/', (req, res) => {
     return res.sendStatus(200);
 });
 
-// Example requests: 
+// Example requests:
+// - http://localhost:3000/48.31/41.7/-82.1/-90.4/states/p-16/efr-16/26/0
 // - http://localhost:3000/48.31/41.7/-82.1/-90.4/states/p-16/er-16/26/0
 // - http://localhost:3000/54.138/37.584/-82.875/-112.879/states/p-16/er-16/38/0
 // - http://localhost:3000/42.21/41.8/-87.7/-88.5/tracts/p-16/er-16/26/1
 app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp/:geoid/:idx', (req, res) => {
     request({
-        url: 'https://evictionlab.org/tool/assets/style.json',
+        url: 'https://evictionlab.org/map/assets/maps/style.json',
     }, (err, styleRes, body) => {
         if (err) {
             console.error(err);
