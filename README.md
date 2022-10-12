@@ -51,5 +51,6 @@ https://awscli.amazonaws.com/v2/documentation/api/latest/reference/cloudformatio
  - Docker Hub repo: https://hub.docker.com/repository/docker/hyperobjekt/map-screenshot-gl
  - CloudFormation stack: https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/events?filteringStatus=active&filteringText=&viewNested=true&hideStacks=false&stackId=arn%3Aaws%3Acloudformation%3Aus-east-1%3A318011162599%3Astack%2Fmap-screenshot-cluster%2Fb699c170-2d7a-11e8-980b-5044763dbb7b
  - ECS cluster: https://us-east-1.console.aws.amazon.com/ecs/v2/clusters/map-screenshot-cluster-ECSCluster-6CEKKPS6CZ9O/services?region=us-east-1
+ - ECS service: https://us-east-1.console.aws.amazon.com/ecs/v2/clusters/map-screenshot-cluster-ECSCluster-6CEKKPS6CZ9O/services/map-screenshot-cluster-service-8PXOICK7M3S6?region=us-east-1
  - ECS web task: https://us-east-1.console.aws.amazon.com/ecs/v2/task-definitions/map-screenshot-cluster-web-task?region=us-east-1
  - Screenshot service: https://screenshot.evictionlab.org/48.31/41.7/-82.1/-90.4/states/p-16/efr-16/26/0
