@@ -41,8 +41,9 @@ https://awscli.amazonaws.com/v2/documentation/api/latest/reference/cloudformatio
 ```
 
 ## Notes
-- the screenshot service pulls data from the tiles deployed at https://tiles.evictionlab.org/ as designated in https://evictionlab.org/map/assets/maps/style.json 
-  - requests for states and counties will utilize `modeled` data, while requests for cities, tracts, and block groups will utilize `raw` data (as modeled data is not available for these smaller geographies)
+
+- the screenshot service pulls data from the tiles deployed at https://tiles.evictionlab.org/ as designated in https://evictionlab.org/tool/assets/style.json
+- requests for states and counties will utilize `modeled` data, while requests for cities, tracts, and block groups will utilize `raw` data (as modeled data is not available for these smaller geographies)
 
 ## Links
 
