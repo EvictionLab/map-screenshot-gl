@@ -4,8 +4,8 @@ set -o pipefail
 set -e
 set -x
 
-docker build -t hyperobjekt/map-screenshot-gl:latest .
-docker push hyperobjekt/map-screenshot-gl:latest
+#docker build -t hyperobjekt/map-screenshot-gl:latest .
+#docker push hyperobjekt/map-screenshot-gl:latest
 
 TEMPLATE_VERSION_FILENAME="map-screenshot-gl-ecs-date:$(date -r ./ecs.yml +'%Y-%m-%dT%H:%M:%SZ')-git:$(git rev-parse --short HEAD)-file:$(sha256sum ecs.yml | head -c 20).yml"
 export TEMPLATE_VERSION_FILENAME
@@ -27,3 +27,8 @@ aws --profile hyperobjekt --region us-east-1 \
 aws --profile hyperobjekt --region us-east-1 \
   cloudformation wait stack-update-complete \
     --stack-name map-screenshot-cluster
+
+aws --profile hyperobjekt --region us-east-1 \
+  ecs describe-services  \
+    --cluster map-screenshot-cluster-ECSCluster-6CEKKPS6CZ9O \
+    --services map-screenshot-cluster-service-8PXOICK7M3S6
