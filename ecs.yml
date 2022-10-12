@@ -150,7 +150,7 @@ Resources:
     Properties:
       ImageId: !FindInMap [AWSRegionToAMI, !Ref 'AWS::Region', AMIID]
       SecurityGroups: [!Ref 'EcsSecurityGroup']
-      InstanceType: t2.micro
+      InstanceType: t2.small
       IamInstanceProfile: !Ref 'EC2InstanceProfile'
       KeyName: !Ref 'KeyName'
       UserData:
